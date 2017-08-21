@@ -87,29 +87,29 @@ func apiHandleStatsPricesItem(c echo.Context) error {
 		lres := lib.APIStatsPricesItem{
 			City: l.String(),
 		}
-		m := l.Model()
 
 		// Find lowest offer price
-		if err := db.Where("item_id = ? and auction_type = ?", c.Param("item"), "offer").Order("price").First(m).Error; err != nil {
+		m := l.Model()
+		if err := db.Where("item_id = ? and auction_type = ?", c.Param("item"), "offer").Order("price").First(&m).Error; err != nil {
 			continue
 		}
 		lres.SellPriceMin = m.Price
 
 		// Find highest offer price
 		m = l.Model()
-		if err := db.Where("item_id = ? and auction_type = ?", c.Param("item"), "offer").Order("price desc").First(m).Error; err == nil {
+		if err := db.Where("item_id = ? and auction_type = ?", c.Param("item"), "offer").Order("price desc").First(&m).Error; err == nil {
 			lres.SellPriceMax = m.Price
 		}
 
 		// Find lowest request price
 		m = l.Model()
-		if err := db.Where("item_id = ? and auction_type = ?", c.Param("item"), "request").Order("price").First(m).Error; err == nil {
+		if err := db.Where("item_id = ? and auction_type = ?", c.Param("item"), "request").Order("price").First(&m).Error; err == nil {
 			lres.BuyPriceMin = m.Price
 		}
 
 		// Find highest request price
 		m = l.Model()
-		if err := db.Where("item_id = ? and auction_type = ?", c.Param("item"), "request").Order("price desc").First(m).Error; err == nil {
+		if err := db.Where("item_id = ? and auction_type = ?", c.Param("item"), "request").Order("price desc").First(&m).Error; err == nil {
 			lres.BuyPriceMax = m.Price
 		}
 

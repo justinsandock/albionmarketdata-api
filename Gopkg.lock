@@ -101,7 +101,7 @@
   branch = "master"
   name = "github.com/pcdummy/albiondata-sql"
   packages = ["lib"]
-  revision = "93ebf64863b39b077bc87a82e53337533e88871e"
+  revision = "9d669c12293a07509b26c2dfcb64b14c8a1f2877"
 
 [[projects]]
   name = "github.com/pelletier/go-buffruneio"
