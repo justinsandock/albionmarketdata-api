@@ -1,0 +1,17 @@
+[[constraint]]
+  name = "jinzhu/gorm"
+
+[[constraint]]
+  name = "github.com/pcdummy/albiondata-sql"
+
+[[constraint]]
+  name = "github.com/mitchellh/go-homedir"
+
+[[constraint]]
+  name = "github.com/spf13/cobra"
+
+[[constraint]]
+  name = "github.com/spf13/viper"
+
+[[constraint]]
+  name = "github.com/labstack/echo"

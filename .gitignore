@@ -1,0 +1,5 @@
+.vscode/
+vendor/
+
+albiondata-api
+albiondata-api.yaml
