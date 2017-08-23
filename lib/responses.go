@@ -1,9 +1,16 @@
 package lib
 
+import "time"
+
 type APIStatsPricesItem struct {
-	City         string `json:"city"`
-	SellPriceMin int    `json:"sell_price_min"`
-	SellPriceMax int    `json:"sell_price_max"`
-	BuyPriceMin  int    `json:"buy_price_min"`
-	BuyPriceMax  int    `json:"buy_price_max"`
+	ItemID           string    `json:"item_id"`
+	City             string    `json:"city"`
+	SellPriceMin     int       `json:"sell_price_min"`
+	SellPriceMinDate time.Time `json:"sell_price_min_date"`
+	SellPriceMax     int       `json:"sell_price_max"`
+	SellPriceMaxDate time.Time `json:"sell_price_max_date"`
+	BuyPriceMin      int       `json:"buy_price_min"`
+	BuyPriceMinDate  time.Time `json:"buy_price_min_date"`
+	BuyPriceMax      int       `json:"buy_price_max"`
+	BuyPriceMaxDate  time.Time `json:"buy_price_max_date"`
 }

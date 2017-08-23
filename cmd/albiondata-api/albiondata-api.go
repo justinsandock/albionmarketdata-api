@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mssql"
@@ -90,37 +91,46 @@ func apiHome(c echo.Context) error {
 func apiHandleStatsPricesItem(c echo.Context) error {
 	result := []lib.APIStatsPricesItem{}
 
-	for _, l := range adslib.Locations() {
-		lres := lib.APIStatsPricesItem{
-			City: l.String(),
-		}
+	itemIDs := strings.Split(c.Param("item"), ",")
 
-		// Find lowest offer price
-		m := l.Model()
-		if err := db.Where("item_id = ? and auction_type = ?", c.Param("item"), "offer").Order("price").First(&m).Error; err != nil {
-			continue
-		}
-		lres.SellPriceMin = m.Price
+	for _, itemID := range itemIDs {
+		for _, l := range adslib.Locations() {
+			lres := lib.APIStatsPricesItem{
+				ItemID: itemID,
+				City:   l.String(),
+			}
 
-		// Find highest offer price
-		m = l.Model()
-		if err := db.Where("item_id = ? and auction_type = ?", c.Param("item"), "offer").Order("price desc").First(&m).Error; err == nil {
-			lres.SellPriceMax = m.Price
-		}
+			// Find lowest offer price
+			m := l.Model()
+			if err := db.Where("item_id = ? and auction_type = ?", itemID, "offer").Order("price").First(&m).Error; err != nil {
+				continue
+			}
+			lres.SellPriceMin = m.Price
+			lres.SellPriceMinDate = m.UpdatedAt
 
-		// Find lowest request price
-		m = l.Model()
-		if err := db.Where("item_id = ? and auction_type = ?", c.Param("item"), "request").Order("price").First(&m).Error; err == nil {
-			lres.BuyPriceMin = m.Price
-		}
+			// Find highest offer price
+			m = l.Model()
+			if err := db.Where("item_id = ? and auction_type = ?", itemID, "offer").Order("price desc").First(&m).Error; err == nil {
+				lres.SellPriceMax = m.Price
+				lres.SellPriceMaxDate = m.UpdatedAt
+			}
 
-		// Find highest request price
-		m = l.Model()
-		if err := db.Where("item_id = ? and auction_type = ?", c.Param("item"), "request").Order("price desc").First(&m).Error; err == nil {
-			lres.BuyPriceMax = m.Price
-		}
+			// Find lowest request price
+			m = l.Model()
+			if err := db.Where("item_id = ? and auction_type = ?", itemID, "request").Order("price").First(&m).Error; err == nil {
+				lres.BuyPriceMin = m.Price
+				lres.BuyPriceMinDate = m.UpdatedAt
+			}
 
-		result = append(result, lres)
+			// Find highest request price
+			m = l.Model()
+			if err := db.Where("item_id = ? and auction_type = ?", itemID, "request").Order("price desc").First(&m).Error; err == nil {
+				lres.BuyPriceMax = m.Price
+				lres.BuyPriceMaxDate = m.UpdatedAt
+			}
+
+			result = append(result, lres)
+		}
 	}
 
 	return c.JSON(http.StatusOK, result)
