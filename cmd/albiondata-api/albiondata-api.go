@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"path/filepath"
 
 	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/mssql"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
@@ -29,7 +31,7 @@ var (
 var rootCmd = &cobra.Command{
 	Use:   "albiondata-api",
 	Short: "albiondata-api is the API Server for the Albion Data Project",
-	Long: `Reads data from a SQL Database (MySQL, PostgreSQL and SQLite3 are supported), 
+	Long: `Reads data from a SQL Database (MSSQL, MySQL, PostgreSQL and SQLite3 are supported), 
 and serves them through a HTTP API`,
 	Run: doCmd,
 }
@@ -64,8 +66,13 @@ func initConfig() {
 		viper.AddConfigPath(home)
 		viper.SetConfigName("albiondata-api")
 
-		wd, _ := os.Getwd()
-		viper.AddConfigPath(wd)
+		// Add the executable path as
+		ex, err := os.Executable()
+		if err != nil {
+			panic(err)
+		}
+		exPath := filepath.Dir(ex)
+		viper.AddConfigPath(exPath)
 	}
 
 	if err := viper.ReadInConfig(); err != nil {
