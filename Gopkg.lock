@@ -52,8 +52,8 @@
 [[projects]]
   name = "github.com/labstack/echo"
   packages = [".","middleware"]
-  revision = "935a60782cbbc55110e7bd4b33120e4567cbee43"
-  version = "v3.2.1"
+  revision = "6c54ff78a2351623e91ccf085d94a78d02b1882c"
+  version = "3.2.2"
 
 [[projects]]
   name = "github.com/labstack/gommon"
@@ -107,7 +107,7 @@
   branch = "master"
   name = "github.com/pcdummy/albiondata-sql"
   packages = ["lib"]
-  revision = "9d669c12293a07509b26c2dfcb64b14c8a1f2877"
+  revision = "d68ee5de76acf1b6b51005928604f6d57cc311a6"
 
 [[projects]]
   name = "github.com/pelletier/go-buffruneio"
@@ -137,7 +137,7 @@
   branch = "master"
   name = "github.com/spf13/cobra"
   packages = ["."]
-  revision = "4a7b7e65864c064d48dce82efbbfed2bdc0bf2aa"
+  revision = "2df9a531813370438a4d79bfc33e21f58063ed87"
 
 [[projects]]
   branch = "master"
