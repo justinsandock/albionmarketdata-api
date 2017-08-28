@@ -5,7 +5,9 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mssql"
@@ -43,9 +45,11 @@ func init() {
 	rootCmd.PersistentFlags().StringP("listen", "l", "[::1]:3080", "Host and port to listen on")
 	rootCmd.PersistentFlags().StringP("dbType", "t", "mysql", "Database type must be one of mysql, postgresql, sqlite3")
 	rootCmd.PersistentFlags().StringP("dbURI", "u", "", "Databse URI to connect to, see: http://jinzhu.me/gorm/database.html#connecting-to-a-database")
+	rootCmd.PersistentFlags().IntP("minUpdatedAt", "m", 172800, "UpdatedAt must be >= now - this seconds")
 	viper.BindPFlag("listen", rootCmd.PersistentFlags().Lookup("listen"))
 	viper.BindPFlag("dbType", rootCmd.PersistentFlags().Lookup("dbType"))
 	viper.BindPFlag("dbURI", rootCmd.PersistentFlags().Lookup("dbURI"))
+	viper.BindPFlag("minUpdatedAt", rootCmd.PersistentFlags().Lookup("minUpdatedAt"))
 }
 
 func initConfig() {
@@ -91,6 +95,12 @@ func apiHome(c echo.Context) error {
 func apiHandleStatsPricesItem(c echo.Context) error {
 	result := []lib.APIStatsPricesItem{}
 
+	ageInt, err := strconv.Atoi(c.QueryParam("age"))
+	if err != nil {
+		ageInt = viper.GetInt("minUpdatedAt")
+	}
+	ageTime := time.Now().Add(-time.Duration(ageInt) * time.Second)
+
 	itemIDs := strings.Split(c.Param("item"), ",")
 
 	for _, itemID := range itemIDs {
@@ -102,7 +112,7 @@ func apiHandleStatsPricesItem(c echo.Context) error {
 
 			// Find lowest offer price
 			m := adslib.NewModelMarketOrder()
-			if err := db.Where("location = ? and item_id = ? and auction_type = ?", l, itemID, "offer").Order("price").First(&m).Error; err != nil {
+			if err := db.Where("location = ? and item_id = ? and auction_type = ? and updated_at >= ?", l, itemID, "offer", ageTime).Order("updated_at, price").First(&m).Error; err != nil {
 				continue
 			}
 			lres.SellPriceMin = m.Price
@@ -110,21 +120,21 @@ func apiHandleStatsPricesItem(c echo.Context) error {
 
 			// Find highest offer price
 			m = adslib.NewModelMarketOrder()
-			if err := db.Where("location = ? and item_id = ? and auction_type = ?", l, itemID, "offer").Order("price desc").First(&m).Error; err == nil {
+			if err := db.Where("location = ? and item_id = ? and auction_type = ? and updated_at >= ?", l, itemID, "offer", ageTime).Order("updated_at asc, price desc").First(&m).Error; err == nil {
 				lres.SellPriceMax = m.Price
 				lres.SellPriceMaxDate = m.UpdatedAt
 			}
 
 			// Find lowest request price
 			m = adslib.NewModelMarketOrder()
-			if err := db.Where("location = ? and item_id = ? and auction_type = ?", l, itemID, "request").Order("price").First(&m).Error; err == nil {
+			if err := db.Where("location = ? and item_id = ? and auction_type = ? and updated_at >= ?", l, itemID, "request", ageTime).Order("updated_at, price").First(&m).Error; err == nil {
 				lres.BuyPriceMin = m.Price
 				lres.BuyPriceMinDate = m.UpdatedAt
 			}
 
 			// Find highest request price
 			m = adslib.NewModelMarketOrder()
-			if err := db.Where("location = ? and item_id = ? and auction_type = ?", l, itemID, "request").Order("price desc").First(&m).Error; err == nil {
+			if err := db.Where("location = ? and item_id = ? and auction_type = ? and updated_at >= ?", l, itemID, "request", ageTime).Order("updated_at asc, price desc").First(&m).Error; err == nil {
 				lres.BuyPriceMax = m.Price
 				lres.BuyPriceMaxDate = m.UpdatedAt
 			}
