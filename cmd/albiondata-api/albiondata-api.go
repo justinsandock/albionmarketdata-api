@@ -110,36 +110,73 @@ func apiHandleStatsPricesItem(c echo.Context) error {
 				City:   l.String(),
 			}
 
+			found := false
+
 			// Find lowest offer price
 			m := adslib.NewModelMarketOrder()
-			if err := db.Where("location = ? and item_id = ? and auction_type = ? and updated_at >= ?", l, itemID, "offer", ageTime).Order("updated_at, price").First(&m).Error; err != nil {
-				continue
+			if err := db.Select("*, DATE_FORMAT(`updated_at`, '%Y-%m-%d %H:%i') as updated_at_no_seconds").Where("location = ? and item_id = ? and auction_type = ? and updated_at >= ?", l, itemID, "offer", ageTime).Order("updated_at_no_seconds desc, price asc").First(&m).Error; err == nil {
+				found = true
+				lres.SellPriceMin = m.Price
+				lres.SellPriceMinDate = m.UpdatedAt
 			}
-			lres.SellPriceMin = m.Price
-			lres.SellPriceMinDate = m.UpdatedAt
 
 			// Find highest offer price
 			m = adslib.NewModelMarketOrder()
-			if err := db.Where("location = ? and item_id = ? and auction_type = ? and updated_at >= ?", l, itemID, "offer", ageTime).Order("updated_at asc, price desc").First(&m).Error; err == nil {
+			if err := db.Select("*, DATE_FORMAT(`updated_at`, '%Y-%m-%d %H:%i') as updated_at_no_seconds").Where("location = ? and item_id = ? and auction_type = ? and updated_at >= ?", l, itemID, "offer", ageTime).Order("updated_at_no_seconds desc, price desc").First(&m).Error; err == nil {
+				found = true
 				lres.SellPriceMax = m.Price
 				lres.SellPriceMaxDate = m.UpdatedAt
 			}
 
 			// Find lowest request price
 			m = adslib.NewModelMarketOrder()
-			if err := db.Where("location = ? and item_id = ? and auction_type = ? and updated_at >= ?", l, itemID, "request", ageTime).Order("updated_at, price").First(&m).Error; err == nil {
+			if err := db.Select("*, DATE_FORMAT(`updated_at`, '%Y-%m-%d %H:%i') as updated_at_no_seconds").Where("location = ? and item_id = ? and auction_type = ? and updated_at >= ?", l, itemID, "request", ageTime).Order("updated_at_no_seconds desc, price asc").First(&m).Error; err == nil {
+				found = true
 				lres.BuyPriceMin = m.Price
 				lres.BuyPriceMinDate = m.UpdatedAt
 			}
 
 			// Find highest request price
 			m = adslib.NewModelMarketOrder()
-			if err := db.Where("location = ? and item_id = ? and auction_type = ? and updated_at >= ?", l, itemID, "request", ageTime).Order("updated_at asc, price desc").First(&m).Error; err == nil {
+			if err := db.Select("*, DATE_FORMAT(`updated_at`, '%Y-%m-%d %H:%i') as updated_at_no_seconds").Where("location = ? and item_id = ? and auction_type = ? and updated_at >= ?", l, itemID, "request", ageTime).Order("updated_at_no_seconds desc, price desc").First(&m).Error; err == nil {
+				found = true
 				lres.BuyPriceMax = m.Price
 				lres.BuyPriceMaxDate = m.UpdatedAt
 			}
 
-			result = append(result, lres)
+			if found {
+				result = append(result, lres)
+			}
+		}
+	}
+
+	return c.JSON(http.StatusOK, result)
+}
+
+func apiHandleStatsChartsItem(c echo.Context) error {
+	result := []lib.APIStatsChartsResponse{}
+
+	item := c.Param("item")
+
+	dbResults := []adslib.ModelMarketStats{}
+
+	for _, l := range adslib.Locations() {
+		lResult := lib.APIStatsChartsLocationResponse{}
+
+		db.Where("item_id = ? AND location = ?", item, l).Find(&dbResults)
+
+		if len(dbResults) > 0 {
+			for _, dbResult := range dbResults {
+				lResult.Timestamps = append(lResult.Timestamps, dbResult.Timestamp.Unix()*1000) // *1000 For charts.js which wants milliseconds
+				lResult.PricesMin = append(lResult.PricesMin, dbResult.PriceMin)
+				lResult.PricesMax = append(lResult.PricesMax, dbResult.PriceMax)
+				lResult.PricesAvg = append(lResult.PricesAvg, dbResult.PriceAvg)
+			}
+
+			result = append(result, lib.APIStatsChartsResponse{
+				Location: l.String(),
+				Data:     lResult,
+			})
 		}
 	}
 
@@ -177,6 +214,7 @@ func doCmd(cmd *cobra.Command, args []string) {
 
 	e.GET("/", apiHome)
 	e.GET("/api/v1/stats/prices/:item", apiHandleStatsPricesItem)
+	e.GET("/api/v1/stats/charts/:item", apiHandleStatsChartsItem)
 
 	// Start server
 	e.Logger.Fatal(e.Start(viper.GetString("listen")))

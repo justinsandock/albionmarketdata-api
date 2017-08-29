@@ -14,3 +14,15 @@ type APIStatsPricesItem struct {
 	BuyPriceMax      int       `json:"buy_price_max"`
 	BuyPriceMaxDate  time.Time `json:"buy_price_max_date"`
 }
+
+type APIStatsChartsResponse struct {
+	Location string                         `json:"location"`
+	Data     APIStatsChartsLocationResponse `json:"data"`
+}
+
+type APIStatsChartsLocationResponse struct {
+	Timestamps []int64   `json:"timestamps"`
+	PricesMin  []int     `json:"prices_min"`
+	PricesMax  []int     `json:"prices_max"`
+	PricesAvg  []float64 `json:"prices_avg"`
+}
