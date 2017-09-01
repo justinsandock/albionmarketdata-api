@@ -101,7 +101,25 @@ func apiHandleStatsPricesItem(c echo.Context) error {
 	}
 	ageTime := time.Now().Add(-time.Duration(ageInt) * time.Second)
 
-	itemIDs := strings.Split(c.Param("item"), ",")
+	queryItemIDs := strings.Split(c.Param("item"), ",")
+	itemIDs := []string{}
+
+	for _, qID := range queryItemIDs {
+		if strings.Contains(qID, "*") {
+			sqlID := strings.Replace(qID, "*", "%", -1)
+
+			foundIDs := []string{}
+			if err := db.Table(adslib.NewModelMarketOrder().TableName()).Select("item_id").Where("item_id LIKE ? and updated_at >= ?", sqlID, ageTime).Group("item_id").Pluck("item_id", &foundIDs).Error; err != nil {
+				fmt.Printf("%v\n", err)
+				continue
+			}
+
+			itemIDs = append(itemIDs, foundIDs...)
+
+		} else {
+			itemIDs = append(itemIDs, qID)
+		}
+	}
 
 	for _, itemID := range itemIDs {
 		for _, l := range adslib.Locations() {
