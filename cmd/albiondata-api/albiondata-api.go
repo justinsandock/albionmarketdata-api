@@ -95,12 +95,31 @@ func apiHome(c echo.Context) error {
 func apiHandleStatsPricesItem(c echo.Context) error {
 	result := []lib.APIStatsPricesItem{}
 
+	// age query param
 	ageInt, err := strconv.Atoi(c.QueryParam("age"))
 	if err != nil {
 		ageInt = viper.GetInt("minUpdatedAt")
 	}
 	ageTime := time.Now().Add(-time.Duration(ageInt) * time.Second)
 
+	// location query param
+	locs := adslib.Locations()
+	queryLocs := strings.Split(c.QueryParam("locations"), ",")
+	if len(queryLocs) > 0 {
+		fmt.Printf("%v", queryLocs)
+
+		locs = []adslib.Location{}
+		for _, queryLoc := range queryLocs {
+			for _, l := range adslib.Locations() {
+				if strings.Contains(l.String(), queryLoc) {
+					locs = append(locs, l)
+					break
+				}
+			}
+		}
+	}
+
+	// item query param
 	queryItemIDs := strings.Split(c.Param("item"), ",")
 	itemIDs := []string{}
 
@@ -122,7 +141,7 @@ func apiHandleStatsPricesItem(c echo.Context) error {
 	}
 
 	for _, itemID := range itemIDs {
-		for _, l := range adslib.Locations() {
+		for _, l := range locs {
 			lres := lib.APIStatsPricesItem{
 				ItemID: itemID,
 				City:   l.String(),
