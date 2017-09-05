@@ -104,9 +104,8 @@ func apiHandleStatsPricesItem(c echo.Context) error {
 
 	// location query param
 	locs := adslib.Locations()
-	queryLocs := strings.Split(c.QueryParam("locations"), ",")
-	if len(queryLocs) > 0 {
-		fmt.Printf("%v", queryLocs)
+	if len(c.QueryParam("locations")) > 0 {
+		queryLocs := strings.Split(c.QueryParam("locations"), ",")
 
 		locs = []adslib.Location{}
 		for _, queryLoc := range queryLocs {
@@ -193,11 +192,27 @@ func apiHandleStatsPricesItem(c echo.Context) error {
 func apiHandleStatsChartsItem(c echo.Context) error {
 	result := []lib.APIStatsChartsResponse{}
 
+	// location query param
+	locs := adslib.Locations()
+	if len(c.QueryParam("locations")) > 0 {
+		queryLocs := strings.Split(c.QueryParam("locations"), ",")
+
+		locs = []adslib.Location{}
+		for _, queryLoc := range queryLocs {
+			for _, l := range adslib.Locations() {
+				if strings.Contains(l.String(), queryLoc) {
+					locs = append(locs, l)
+					break
+				}
+			}
+		}
+	}
+
 	item := c.Param("item")
 
 	dbResults := []adslib.ModelMarketStats{}
 
-	for _, l := range adslib.Locations() {
+	for _, l := range locs {
 		lResult := lib.APIStatsChartsLocationResponse{}
 
 		db.Where("item_id = ? AND location = ?", item, l).Find(&dbResults)
