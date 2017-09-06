@@ -2,7 +2,7 @@
   name = "jinzhu/gorm"
 
 [[constraint]]
-  name = "github.com/pcdummy/albiondata-sql"
+  name = "github.com/albiondata/albiondata-sql"
 
 [[constraint]]
   name = "github.com/mitchellh/go-homedir"
