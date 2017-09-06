@@ -3,7 +3,7 @@ albiondata-api
 
 In short: this tool allows you to export prices over an api which you imported with albiondata-sql.
 
-The API to access the data imported by [albiondata-sql](https://github.com/pcdummy/albiondata-sql) from [albiondata-client](https://github.com/Regner/albiondata-client) over [albiondata-deduper](https://github.com/Regner/albiondata-deduper/).
+The API to access the data imported by [albiondata-sql](https://github.com/albiondata/albiondata-sql) from [albiondata-client](https://github.com/Regner/albiondata-client) over [albiondata-deduper](https://github.com/albiondata/albiondata-deduper/).
 
 
 ## Usage

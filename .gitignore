@@ -1,5 +1,5 @@
 .vscode/
 vendor/
 
-./albiondata-api
-./albiondata-api.yaml
+albiondata-api
+albiondata-api.yaml

@@ -15,8 +15,8 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
 
-	"github.com/pcdummy/albiondata-api/lib"
-	adslib "github.com/pcdummy/albiondata-sql/lib"
+	"github.com/albiondata/albiondata-api/lib"
+	adslib "github.com/albiondata/albiondata-sql/lib"
 
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
