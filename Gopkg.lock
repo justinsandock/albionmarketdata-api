@@ -87,7 +87,7 @@
 
 [[projects]]
   branch = "master"
-  name = "github.com/pcdummy/albiondata-sql"
+  name = "github.com/broderickhyman/albiondata-sql"
   packages = ["lib"]
   revision = "ef5cd086787f7b699b16c5f34c22d966ace98709"
 
