@@ -3,14 +3,14 @@ albiondata-api
 
 In short: this tool allows you to export prices over an api which you imported with albiondata-sql.
 
-The API to access the data imported by [albiondata-sql](https://github.com/albiondata/albiondata-sql) from [albiondata-client](https://github.com/Regner/albiondata-client) over [albiondata-deduper](https://github.com/albiondata/albiondata-deduper/).
+The API to access the data imported by [albiondata-sql](https://github.com/broderickhyman/albiondata-sql) from [albiondata-client](https://github.com/broderickhyman/albiondata-client) over [albiondata-deduper](https://github.com/broderickhyman/albiondata-deduper/).
 
 
 ## Usage
 
 Thanks to [viper](https://github.com/spf13/viper) and [cobra](https://github.com/spf13/cobra) you have 3 ways to configure albiondata-api.
 
-### 1.) Traditional by configfile 
+### 1.) Traditional by configfile
 
 Just copy albiondata-api.yaml.tmpl to albiondata-api.yaml and edit it.
 
