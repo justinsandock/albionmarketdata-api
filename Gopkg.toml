@@ -1,5 +1,5 @@
 [[constraint]]
-  name = "jinzhu/gorm"
+  name = "github.com/jinzhu/gorm"
 
 [[constraint]]
   name = "github.com/albiondata/albiondata-sql"
