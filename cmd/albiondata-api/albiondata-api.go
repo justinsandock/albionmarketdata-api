@@ -100,30 +100,44 @@ func apiHandleStatsPricesItemJson(c echo.Context) error {
 func apiHandleStatsPricesView(c echo.Context) error {
 	results  := getStatsPricesItem(c)
 
-	html := "<html><body><table style='width:100%'>" +
-		"<tr>" +
-		"<th>item_id</th>" +
-		"<th>city</th>" +
-		"<th>sell_price_min</th>" +
-		"<th>sell_price_min_date</th>" +
-		"<th>sell_price_max</th>" +
-		"<th>sell_price_max_date</th>" +
-		"<th>buy_price_min</th>" +
-		"<th>buy_price_min_date</th>" +
-		"<th>buy_price_max</th>" +
-		"<th>buy_price_max_date</th>" +
-		"</tr>"
+	html :=
+`<html>
+	<head>
+		<style>
+			table, th, td {
+				border: 1px solid black;
+				border-collapse: collapse;
+			}
+		</style>
+	</head>
+	<body>
+		<table style='width:100%'>
+			<tr>
+				<th>item_id</th>
+				<th>city</th>
+				<th>sell_price_min</th>
+				<th>sell_price_min_date</th>
+				<th>sell_price_max</th>
+				<th>sell_price_max_date</th>
+				<th>buy_price_min</th>
+				<th>buy_price_min_date</th>
+				<th>buy_price_max</th>
+				<th>buy_price_max_date</th>
+			</tr>`
 	for _, result := range results  {
 		html += "<tr>"
 		v := reflect.ValueOf(result)
 
 		for i := 0; i < v.NumField(); i++ {
-			html += "<td>" + v.Field(i).Interface().(string) + "</td>"
+			html += fmt.Sprintf("<td>%v</td>", v.Field(i).Interface())
 		}
 		html += "</tr>"
 	}
 
-	html += "</table></body></html>"
+	html +=
+`		</table>
+	</body>
+</html>`
 
 	return c.HTML(http.StatusOK, html)
 }
@@ -159,6 +173,9 @@ func getStatsPricesItem(c echo.Context) []lib.APIStatsPricesItem {
 	itemIDs := []string{}
 
 	for _, qID := range queryItemIDs {
+		if qID == "*" {
+			continue
+		}
 		if strings.Contains(qID, "*") {
 			sqlID := strings.Replace(qID, "*", "%", -1)
 
