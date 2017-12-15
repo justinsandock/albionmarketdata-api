@@ -5,3 +5,4 @@ albiondata-api
 albiondata-api.yaml
 
 .idea
+*.exe

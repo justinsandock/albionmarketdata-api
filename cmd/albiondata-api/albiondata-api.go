@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strconv"
 	"strings"
 	"time"
@@ -89,10 +90,45 @@ func initConfig() {
 }
 
 func apiHome(c echo.Context) error {
-	return c.String(http.StatusOK, "Nothing to show here, please go to https://www.albiononline2d.com/")
+	return c.String(http.StatusOK, "Nothing to show here")
 }
 
-func apiHandleStatsPricesItem(c echo.Context) error {
+func apiHandleStatsPricesItemJson(c echo.Context) error {
+	return c.JSON(http.StatusOK, getStatsPricesItem(c))
+}
+
+func apiHandleStatsPricesView(c echo.Context) error {
+	results  := getStatsPricesItem(c)
+
+	html := "<html><body><table style='width:100%'>" +
+		"<tr>" +
+		"<th>item_id</th>" +
+		"<th>city</th>" +
+		"<th>sell_price_min</th>" +
+		"<th>sell_price_min_date</th>" +
+		"<th>sell_price_max</th>" +
+		"<th>sell_price_max_date</th>" +
+		"<th>buy_price_min</th>" +
+		"<th>buy_price_min_date</th>" +
+		"<th>buy_price_max</th>" +
+		"<th>buy_price_max_date</th>" +
+		"</tr>"
+	for _, result := range results  {
+		html += "<tr>"
+		v := reflect.ValueOf(result)
+
+		for i := 0; i < v.NumField(); i++ {
+			html += "<td>" + v.Field(i).Interface().(string) + "</td>"
+		}
+		html += "</tr>"
+	}
+
+	html += "</table></body></html>"
+
+	return c.HTML(http.StatusOK, html)
+}
+
+func getStatsPricesItem(c echo.Context) []lib.APIStatsPricesItem {
 	result := []lib.APIStatsPricesItem{}
 
 	// age query param
@@ -185,8 +221,7 @@ func apiHandleStatsPricesItem(c echo.Context) error {
 			}
 		}
 	}
-
-	return c.JSON(http.StatusOK, result)
+	return result
 }
 
 func apiHandleStatsChartsItem(c echo.Context) error {
@@ -265,8 +300,9 @@ func doCmd(cmd *cobra.Command, args []string) {
 	e.Use(middleware.Logger())
 
 	e.GET("/", apiHome)
-	e.GET("/api/v1/stats/prices/:item", apiHandleStatsPricesItem)
+	e.GET("/api/v1/stats/prices/:item", apiHandleStatsPricesItemJson)
 	e.GET("/api/v1/stats/charts/:item", apiHandleStatsChartsItem)
+	e.GET("/api/v1/stats/view/:item", apiHandleStatsPricesView)
 
 	// Start server
 	e.Logger.Fatal(e.Start(viper.GetString("listen")))
