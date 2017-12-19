@@ -21,6 +21,7 @@ import (
 
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
+	"golang.org/x/crypto/acme/autocert"
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -310,11 +311,18 @@ func doCmd(cmd *cobra.Command, args []string) {
 	e := echo.New()
 	e.HideBanner = true
 
+	// Cache certificates
+	e.AutoTLSManager.Cache = autocert.DirCache("/var/www/.cache")
+	e.Pre(middleware.HTTPSWWWRedirect())
+
 	// Recover from panics
 	e.Use(middleware.Recover())
 
 	// Logger
 	e.Use(middleware.Logger())
+
+	//Allow CORS
+	e.Use(middleware.CORS())
 
 	e.GET("/", apiHome)
 	e.GET("/api/v1/stats/prices/:item", apiHandleStatsPricesItemJson)
@@ -322,7 +330,8 @@ func doCmd(cmd *cobra.Command, args []string) {
 	e.GET("/api/v1/stats/view/:item", apiHandleStatsPricesView)
 
 	// Start server
-	e.Logger.Fatal(e.Start(viper.GetString("listen")))
+	//e.Logger.Fatal(e.Start(viper.GetString("listen")))
+	e.Logger.Fatal(e.StartAutoTLS(viper.GetString("listen")))
 
 	// END ECHO
 	//*******************************
