@@ -93,7 +93,7 @@ func initConfig() {
 }
 
 func apiHome(c echo.Context) error {
-	return c.String(http.StatusOK, "Nothing to show here")
+	return c.Redirect(http.StatusPermanentRedirect, "http://www.albion-online-data.com")
 }
 
 func apiHandleStatsPricesItemJson(c echo.Context) error {
