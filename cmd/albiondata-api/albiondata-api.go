@@ -48,10 +48,12 @@ func init() {
 	rootCmd.PersistentFlags().StringP("dbType", "t", "mysql", "Database type must be one of mysql, postgresql, sqlite3")
 	rootCmd.PersistentFlags().StringP("dbURI", "u", "", "Databse URI to connect to, see: http://jinzhu.me/gorm/database.html#connecting-to-a-database")
 	rootCmd.PersistentFlags().IntP("minUpdatedAt", "m", 172800, "UpdatedAt must be >= now - this seconds")
+	rootCmd.PersistentFlags().Bool("useHttps", false, "useHttps enables or disables AutoTLS")
 	viper.BindPFlag("listen", rootCmd.PersistentFlags().Lookup("listen"))
 	viper.BindPFlag("dbType", rootCmd.PersistentFlags().Lookup("dbType"))
 	viper.BindPFlag("dbURI", rootCmd.PersistentFlags().Lookup("dbURI"))
 	viper.BindPFlag("minUpdatedAt", rootCmd.PersistentFlags().Lookup("minUpdatedAt"))
+	viper.BindPFlag("useHttps", rootCmd.PersistentFlags().Lookup("useHttps"))
 }
 
 func initConfig() {
@@ -312,8 +314,10 @@ func doCmd(cmd *cobra.Command, args []string) {
 	e.HideBanner = true
 
 	// Cache certificates
-	e.AutoTLSManager.Cache = autocert.DirCache("/var/www/.cache")
-	e.Pre(middleware.HTTPSWWWRedirect())
+	if viper.GetBool("useHttps") {
+		e.AutoTLSManager.Cache = autocert.DirCache("/var/www/.cache")
+		e.Pre(middleware.HTTPSWWWRedirect())
+	}
 
 	// Recover from panics
 	e.Use(middleware.Recover())
@@ -330,8 +334,12 @@ func doCmd(cmd *cobra.Command, args []string) {
 	e.GET("/api/v1/stats/view/:item", apiHandleStatsPricesView)
 
 	// Start server
-	//e.Logger.Fatal(e.Start(viper.GetString("listen")))
-	e.Logger.Fatal(e.StartAutoTLS(viper.GetString("listen")))
+	if viper.GetBool("useHttps"){
+		e.Logger.Fatal(e.StartAutoTLS(viper.GetString("listen")))
+	} else {
+		e.Logger.Fatal(e.Start(viper.GetString("listen")))
+	}
+
 
 	// END ECHO
 	//*******************************
