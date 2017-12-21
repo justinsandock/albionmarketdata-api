@@ -26,11 +26,6 @@ For example:
 ADA_DBTYPE=sqlite3 ADA_DBURI=./sqlite.db ADA_LISTEN="[::]:3080" ./albiondata-api
 ```
 
-## Authors
-
-René Jochum <rene@jochums.at>
-
-
 ## LICENSE
 
 MIT
