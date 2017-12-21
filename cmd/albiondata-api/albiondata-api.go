@@ -315,8 +315,9 @@ func doCmd(cmd *cobra.Command, args []string) {
 
 	// Cache certificates
 	if viper.GetBool("useHttps") {
+		//TODO: Fix cache directory with a config
 		e.AutoTLSManager.Cache = autocert.DirCache("/var/www/.cache")
-		e.Pre(middleware.HTTPSWWWRedirect())
+		//e.Pre(middleware.HTTPSWWWRedirect())
 	}
 
 	// Recover from panics
