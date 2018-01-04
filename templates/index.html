@@ -1,0 +1,51 @@
+<html>
+  <head>
+    <script src="https://code.jquery.com/jquery-3.2.1.js" integrity="sha256-DZAnKJ/6XZ9si04Hgrsxu/8s717jcIzLy3oi35EouyE=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.1/Chart.js" integrity="sha256-t3+U9BqykoMN9cqZmJ5Z53TvPv4V7S9AmjUcIWNNyxo=" crossorigin="anonymous"></script>
+  </head>
+  <body>
+    <canvas id="myChart"></canvas>
+    <script>
+      $.getJSON("https://www.albion-online-data.com/api/v1/stats/charts/T1_FARM_CARROT_SEED?locations=Caerleon%20Market", function (json) {
+        console.log(json);
+        var ctx = document.getElementById("myChart").getContext('2d');
+        // var labels = json[0].data.map(function (item) {   return item.location; });
+        locationSet = [];
+        for (var index in json) {
+          var item = json[index];
+          console.log(item);
+          var data = {};
+          data.label = item.location;
+          data.borderWidth = 5;
+          data.fill = false;
+          data.data = [];
+          for (var i = 0; i < item.data.timestamps.length; i++) {
+            // var point = {}; point.x = item.data.timestamps[i]; point.y = item.data.prices_min[i]; data.data.push(point);
+            data.data.push(item.data.prices_min[i]);
+
+          }
+          locationSet.push(data);
+        }
+        console.log(locationSet);
+        var myChart = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: json[0].data.timestamps,
+            datasets: locationSet
+          },
+          options: {
+            scales: {
+              yAxes: [
+                {
+                  ticks: {
+                    beginAtZero: false
+                  }
+                }
+              ]
+            }
+          }
+        });
+      });
+    </script>
+  </body>
+</html>
