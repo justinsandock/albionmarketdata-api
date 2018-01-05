@@ -49,11 +49,17 @@ func init() {
 	rootCmd.PersistentFlags().StringP("dbURI", "u", "", "Databse URI to connect to, see: http://jinzhu.me/gorm/database.html#connecting-to-a-database")
 	rootCmd.PersistentFlags().IntP("minUpdatedAt", "m", 172800, "UpdatedAt must be >= now - this seconds")
 	rootCmd.PersistentFlags().Bool("useHttps", false, "useHttps enables or disables AutoTLS")
+	rootCmd.PersistentFlags().String("autoCertCacheDirectory", "", "Used when useHttps is true. Stores the TLS files in specified directory. https://echo.labstack.com/cookbook/auto-tls")
+	rootCmd.PersistentFlags().String("staticFolderPath", "", "--DANGER-- Path to folder where static files reside for web server. https://echo.labstack.com/guide/static-files")
+	rootCmd.PersistentFlags().String("staticFilePrefix", "", "--DANGER-- Prefix for static files to be served as, like example.com/prefix/index.html. https://echo.labstack.com/guide/static-files")
 	viper.BindPFlag("listen", rootCmd.PersistentFlags().Lookup("listen"))
 	viper.BindPFlag("dbType", rootCmd.PersistentFlags().Lookup("dbType"))
 	viper.BindPFlag("dbURI", rootCmd.PersistentFlags().Lookup("dbURI"))
 	viper.BindPFlag("minUpdatedAt", rootCmd.PersistentFlags().Lookup("minUpdatedAt"))
 	viper.BindPFlag("useHttps", rootCmd.PersistentFlags().Lookup("useHttps"))
+	viper.BindPFlag("autoCertCacheDirectory", rootCmd.PersistentFlags().Lookup("autoCertCacheDirectory"))
+	viper.BindPFlag("staticFolderPath", rootCmd.PersistentFlags().Lookup("staticFolderPath"))
+	viper.BindPFlag("staticFilePrefix", rootCmd.PersistentFlags().Lookup("staticFilePrefix"))
 }
 
 func initConfig() {
@@ -90,10 +96,6 @@ func initConfig() {
 
 	viper.SetEnvPrefix("ADA")
 	viper.AutomaticEnv()
-}
-
-func apiHome(c echo.Context) error {
-	return c.Redirect(http.StatusPermanentRedirect, "http://www.albion-online-data.com")
 }
 
 func apiHandleStatsPricesItemJson(c echo.Context) error {
@@ -314,10 +316,8 @@ func doCmd(cmd *cobra.Command, args []string) {
 	e.HideBanner = true
 
 	// Cache certificates
-	if viper.GetBool("useHttps") {
-		//TODO: Fix cache directory with a config
-		e.AutoTLSManager.Cache = autocert.DirCache("/var/www/.cache")
-		//e.Pre(middleware.HTTPSWWWRedirect())
+	if viper.GetBool("useHttps") && viper.GetString("autoCertCacheDirectory") != "" {
+		e.AutoTLSManager.Cache = autocert.DirCache(viper.GetString("autoCertCacheDirectory"))
 	}
 
 	// Recover from panics
@@ -329,7 +329,14 @@ func doCmd(cmd *cobra.Command, args []string) {
 	//Allow CORS
 	e.Use(middleware.CORS())
 
-	e.GET("/", apiHome)
+	if viper.GetString("staticFilePrefix") != "" && viper.GetString("staticFolderPath") != ""{
+		e.Static(viper.GetString("staticFilePrefix"), viper.GetString("staticFolderPath"))
+	} else {
+		e.GET("/", func(c echo.Context) error {
+			return c.Redirect(http.StatusTemporaryRedirect, "https://www.albion-online-data.com")
+		})
+	}
+
 	e.GET("/api/v1/stats/prices/:item", apiHandleStatsPricesItemJson)
 	e.GET("/api/v1/stats/charts/:item", apiHandleStatsChartsItem)
 	e.GET("/api/v1/stats/view/:item", apiHandleStatsPricesView)
