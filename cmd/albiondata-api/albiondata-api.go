@@ -316,8 +316,11 @@ func doCmd(cmd *cobra.Command, args []string) {
 	e.HideBanner = true
 
 	// Cache certificates
-	if viper.GetBool("useHttps") && viper.GetString("autoCertCacheDirectory") != "" {
-		e.AutoTLSManager.Cache = autocert.DirCache(viper.GetString("autoCertCacheDirectory"))
+	if viper.GetBool("useHttps"){
+		e.Pre(middleware.HTTPSWWWRedirect())
+ 		if viper.GetString("autoCertCacheDirectory") != "" {
+			e.AutoTLSManager.Cache = autocert.DirCache(viper.GetString("autoCertCacheDirectory"))
+		}
 	}
 
 	// Recover from panics
@@ -343,6 +346,9 @@ func doCmd(cmd *cobra.Command, args []string) {
 
 	// Start server
 	if viper.GetBool("useHttps"){
+		go func(c *echo.Echo){
+			e.Logger.Fatal(e.Start(":80"))
+		}(e)
 		e.Logger.Fatal(e.StartAutoTLS(viper.GetString("listen")))
 	} else {
 		e.Logger.Fatal(e.Start(viper.GetString("listen")))
