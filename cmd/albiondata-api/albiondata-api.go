@@ -150,12 +150,16 @@ func apiHandleStatsPricesView(c echo.Context) error {
 func getStatsPricesItem(c echo.Context) []lib.APIStatsPricesItem {
 	result := []lib.APIStatsPricesItem{}
 
+	minimumAge := 172800
+	if viper.IsSet("minUpdatedAt") {
+		minimumAge = viper.GetInt("minUpdatedAt")
+	}
 	// age query param
 	ageInt, err := strconv.Atoi(c.QueryParam("age"))
-	if err != nil {
-		ageInt = viper.GetInt("minUpdatedAt")
+	if err == nil && ageInt < minimumAge {
+		minimumAge = ageInt
 	}
-	ageTime := time.Now().Add(-time.Duration(ageInt) * time.Second)
+	ageTime := time.Now().Add(-time.Duration(minimumAge) * time.Second)
 
 	// location query param
 	locs := adslib.Locations()
