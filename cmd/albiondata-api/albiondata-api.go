@@ -296,6 +296,20 @@ func apiHandleStatsChartsItem(c echo.Context) error {
 	return c.JSON(http.StatusOK, result)
 }
 
+func apiHandleStatsGold(c echo.Context) error {
+	result := lib.APIStatesChartsResponse{}
+
+	dbResults := []adslib.ModelGoldprices{}
+	db.Find(&dbResults)
+
+	for _, dbResult := range dbResults {
+		result.Timestamps = append(result.Timestamps, dbResult.Timestamp.Unix()*1000)
+		result.Prices = append(result.Prices, dbResult.Price)
+	}
+
+	return c.JSON(http.StatusOK, result)
+}
+
 func doCmd(cmd *cobra.Command, args []string) {
 	//******************************
 	// START DB
@@ -347,6 +361,7 @@ func doCmd(cmd *cobra.Command, args []string) {
 	e.GET("/api/v1/stats/prices/:item", apiHandleStatsPricesItemJson)
 	e.GET("/api/v1/stats/charts/:item", apiHandleStatsChartsItem)
 	e.GET("/api/v1/stats/view/:item", apiHandleStatsPricesView)
+	e.GET("/api/v1/stats/gold", apiHandleStatsGold)
 
 	// Start server
 	if viper.GetBool("useHttps"){

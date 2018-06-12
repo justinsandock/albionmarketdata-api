@@ -26,3 +26,8 @@ type APIStatsChartsLocationResponse struct {
 	PricesMax  []int     `json:"prices_max"`
 	PricesAvg  []float64 `json:"prices_avg"`
 }
+
+type APIStatesChartsResponse struct {
+	Timestamps []int64	`json:"timestamps"`
+	Prices	   []int	`json:"prices"`
+}
